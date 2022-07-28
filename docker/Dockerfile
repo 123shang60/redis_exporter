@@ -1,12 +1,12 @@
 #
 # build container
 #
-FROM --platform=linux/amd64 golang:1.18-alpine as builder
+FROM golang:1.18-alpine as builder
 WORKDIR /go/src/github.com/oliver006/redis_exporter/
 
 ADD . /go/src/github.com/oliver006/redis_exporter/
 
-ARG SHA1="bfd78b7"
+ARG SHA1="7b0c319"
 ARG TAG="1.43.0"
 
 RUN apk --no-cache add ca-certificates git
