@@ -1,4 +1,3 @@
-ARG GOARCH
 #
 # build container
 #
@@ -7,18 +6,14 @@ WORKDIR /go/src/github.com/oliver006/redis_exporter/
 
 ADD . /go/src/github.com/oliver006/redis_exporter/
 
-ARG SHA1="[no-sha]"
-ARG TAG="[no-tag]"
-ARG GOARCH
+ARG SHA1="bfd78b7"
+ARG TAG="1.43.0"
 
 RUN apk --no-cache add ca-certificates git
-RUN BUILD_DATE=$(date +%F-%T) CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /redis_exporter-amd64 \
+RUN BUILD_DATE=$(date +%F-%T) CGO_ENABLED=0 GOOS=linux go build -o /redis_exporter \
     -ldflags  "-s -w -extldflags \"-static\" -X main.BuildVersion=$TAG -X main.BuildCommitSha=$SHA1 -X main.BuildDate=$BUILD_DATE" .
 
-RUN BUILD_DATE=$(date +%F-%T) CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /redis_exporter-arm64 \
-    -ldflags  "-s -w -extldflags \"-static\" -X main.BuildVersion=$TAG -X main.BuildCommitSha=$SHA1 -X main.BuildDate=$BUILD_DATE" .
-
-RUN [ "$GOARCH" = "amd64" ]  && /redis_exporter-amd64 -version || ls -la /redis_exporter
+RUN /redis_exporter -version || ls -la /redis_exporter
 
 #
 # scratch release container
@@ -41,7 +36,7 @@ RUN [ "$GOARCH" = "amd64" ]  && /redis_exporter-amd64 -version || ls -la /redis_
 #
 FROM ubuntu:22.04 as ubuntu
 
-COPY --from=builder /redis_exporter-$GOARCH /redis_exporter
+COPY --from=builder /redis_exporter /redis_exporter
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 # Run as non-root user for secure environments
